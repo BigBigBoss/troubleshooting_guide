@@ -1,0 +1,49 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.2.RELEASE'
+    id 'java'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.aalexanov'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = JavaVersion.VERSION_11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.6'
+    compile group: 'com.google.guava', name: 'guava', version: '19.0'
+    annotationProcessor 'org.projectlombok:lombok:1.18.6'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+task copyJarToDocker {
+    copy {
+        from 'build/libs/troubleshooting_guide-0.0.1-SNAPSHOT.jar'
+        into "docker/app/"
+    }
+}
+
+build.dependsOn(copyJarToDocker)
+
+apply plugin: 'idea'
+idea {
+    module {
+        sourceDirs += file('scripts')
+    }
+}
+
+bootRun {
+    jvmArgs = ["-Xmx256m", 
+               "-Xlog:gc*:file=log.gc", 
+               "-XX:+HeapDumpOnOutOfMemoryError", 
+               "-XX:HeapDumpPath=heapdump.bin"]
+}
